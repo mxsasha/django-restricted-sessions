@@ -22,7 +22,7 @@ For compatibility with IPv6 privacy extensions, by default only the first 64 bit
 Documentation
 -------------
 
-The full documentation is at https://django-restricted-sessions.rtfd.org.
+The full documentation is at https://django-restricted-sessions.readthedocs.org.
 
 Quickstart
 ----------

@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from netaddr import IPNetwork, IPAddress, AddrConversionError
+import logging
+
 from django.http import HttpResponseBadRequest
 from django.conf import settings
 
 SESSION_IP_KEY = '_restrictedsessions_ip'
 SESSION_UA_KEY = '_restrictedsessions_ua'
-
+logger = logging.getLogger(__name__)
 
 class RestrictedSessionsMiddleware(object):
     def process_request(self, request):
@@ -19,6 +21,7 @@ class RestrictedSessionsMiddleware(object):
 
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
             request.session.flush()
+            logger.warning("Destroyed session due to invalid change of remote host or user agent")
             return HttpResponseBadRequest()
 
         request.session[SESSION_IP_KEY] = remote_addr

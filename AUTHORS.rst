@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* django-restricted-sessions <eromijn@solidlinks.nl>
+* Erik Romijn <eromijn@solidlinks.nl>
 
 Contributors
 ------------

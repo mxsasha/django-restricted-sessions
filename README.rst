@@ -11,12 +11,18 @@ django-restricted-sessions
 .. image:: https://coveralls.io/repos/erikr/django-restricted-sessions/badge.png?branch=master
     :target: https://coveralls.io/r/erikr/django-restricted-sessions?branch=master
 
-Restrict Django sessions to IP/network/user agent
+Restricts Django sessions to IP and/or user agent.
+
+If the IP or user agent changes after creating the session, the a 400 response is given to the request, the session is
+flushed (all session data deleted, new session created) and a warning is logged. The goal of this middleware is to
+make it harder for an attacker to use a session ID they obtained. It does not make abuse of session IDs impossible.
+
+For compatibility with IPv6 privacy extensions, by default only the first 64 bits of an IPv6 address are checked.
 
 Documentation
 -------------
 
-The full documentation is at http://django-restricted-sessions.rtfd.org.
+The full documentation is at https://django-restricted-sessions.rtfd.org.
 
 Quickstart
 ----------
@@ -25,11 +31,12 @@ Install django-restricted-sessions::
 
     pip install django-restricted-sessions
 
-Then use it in a project::
+Then add it to your middleware after SessionMiddleware::
 
-    import django-restricted-sessions
+    MIDDLEWARE_CLASSES = [
+        ....
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'restrictedsessions.middleware.RestrictedSessionsMiddleware',
+        ....
+    ]
 
-Features
---------
-
-* TODO

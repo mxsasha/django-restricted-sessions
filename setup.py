@@ -26,7 +26,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 setup(
     name='django-restricted-sessions',
     version=version,
-    description="""Restrict Django sessions to IP/network/user agent""",
+    description="""Restrict Django sessions to IP and/or user agent.""",
     long_description=readme + '\n\n' + history,
     author='django-restricted-sessions',
     author_email='eromijn@solidlinks.nl',

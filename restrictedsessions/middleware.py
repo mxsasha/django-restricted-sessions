@@ -7,7 +7,7 @@ from django.conf import settings
 
 SESSION_IP_KEY = '_restrictedsessions_ip'
 SESSION_UA_KEY = '_restrictedsessions_ua'
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('restrictedsessions')
 
 class RestrictedSessionsMiddleware(object):
     def process_request(self, request):

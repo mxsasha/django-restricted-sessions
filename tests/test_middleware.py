@@ -25,28 +25,28 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.request = self.factory.get('/')
 
     def test_without_session(self):
-        self.assertIsNone(self.middleware.process_request(self.request))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
 
     def test_without_remote_addr(self):
         self.add_session_to_request()
         del self.request.META['REMOTE_ADDR']
-        self.assertIsNone(self.middleware.process_request(self.request))
-        self.assertIsNone(self.request.session.get(middleware.SESSION_IP_KEY))
-        self.assertIsNone(self.request.session.get(middleware.SESSION_UA_KEY))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
+        self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
+        self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is None)
 
     @override_settings(RESTRICTEDSESSIONS_REMOTE_ADDR_KEY='CUSTOM_REMOTE_ADDR')
     def test_without_remote_addr_with_custom_key(self):
         self.add_session_to_request()
-        self.assertIsNone(self.middleware.process_request(self.request))
-        self.assertIsNone(self.request.session.get(middleware.SESSION_IP_KEY))
-        self.assertIsNone(self.request.session.get(middleware.SESSION_UA_KEY))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
+        self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
+        self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is None)
 
     def test_saves_with_remote_addr(self):
         self.add_session_to_request()
-        self.assertIsNone(self.middleware.process_request(self.request))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
         self.assertEqual(self.request.session[middleware.SESSION_IP_KEY], self.request.META['REMOTE_ADDR'])
         self.request.META['HTTP_USER_AGENT'] = 'test-ua'
-        self.assertIsNone(self.middleware.process_request(self.request))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
         self.assertEqual(self.request.session[middleware.SESSION_IP_KEY], self.request.META['REMOTE_ADDR'])
         self.assertEqual(self.request.session[middleware.SESSION_UA_KEY], self.request.META['HTTP_USER_AGENT'])
 
@@ -55,7 +55,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.add_session_to_request()
         self.request.META['CUSTOM_REMOTE_ADDR'] = self.request.META['REMOTE_ADDR']
         del self.request.META['REMOTE_ADDR']
-        self.assertIsNone(self.middleware.process_request(self.request))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
         self.assertEqual(self.request.session[middleware.SESSION_IP_KEY], self.request.META['CUSTOM_REMOTE_ADDR'])
 
     def test_validates_ipv4(self):
@@ -91,7 +91,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.add_session_to_request()
         self.request.session[middleware.SESSION_IP_KEY] = session_ip
         self.request.META['REMOTE_ADDR'] = valid
-        self.assertIsNone(self.middleware.process_request(self.request))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
 
         if invalid:
             self.request.session['canary'] = 'canary'
@@ -103,7 +103,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.add_session_to_request()
         self.request.META['HTTP_USER_AGENT'] = 'test-ua1'
         self.request.session[middleware.SESSION_UA_KEY] = 'test-ua1'
-        self.assertIsNone(self.middleware.process_request(self.request))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
 
         self.request.META['HTTP_USER_AGENT'] = 'test-ua2'
         self.assertEqual(self.middleware.process_request(self.request).status_code, 400)
@@ -117,7 +117,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.add_session_to_request()
         self.request.session[middleware.SESSION_UA_KEY] = 'test-ua1'
         self.request.META['HTTP_USER_AGENT'] = 'test-ua2'
-        self.assertIsNone(self.middleware.process_request(self.request))
+        self.assertTrue(self.middleware.process_request(self.request) is None)
 
     def add_session_to_request(self):
         middleware = SessionMiddleware()

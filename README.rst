@@ -8,7 +8,7 @@ django-restricted-sessions
 .. image:: https://travis-ci.org/erikr/django-restricted-sessions.png?branch=master
     :target: https://travis-ci.org/erikr/django-restricted-sessions
 
-.. image:: https://coveralls.io/repos/erikr/django-restricted-sessions/badge.png?branch=master
+.. image:: https://coveralls.io/repos/erikr/django-restricted-sessions/badge.png?branch=master&
     :target: https://coveralls.io/r/erikr/django-restricted-sessions?branch=master
 
 Restricts Django sessions to IP and/or user agent.

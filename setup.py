@@ -36,7 +36,7 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        'netaddr',
+        'netaddr>=0.7.10',
     ],
     license="BSD",
     zip_safe=False,

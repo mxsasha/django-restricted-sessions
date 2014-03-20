@@ -87,6 +87,12 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
             invalid='::ffff:127.0.0.2'
         )
 
+    def test_validates_ipv4_to_ipv6(self):
+        self._remote_addr_test(session_ip='127.0.0.1', valid='127.0.0.1', invalid='2001:db8::1')
+
+    def test_validates_ipv6_to_ipv4(self):
+        self._remote_addr_test(session_ip='2001:db8::1', valid='2001:db8::1', invalid='127.0.0.1')
+
     def _remote_addr_test(self, session_ip, valid, invalid=None):
         self.add_session_to_request()
         self.request.session[middleware.SESSION_IP_KEY] = session_ip

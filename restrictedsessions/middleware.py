@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from netaddr import IPNetwork, IPAddress, AddrConversionError
+from netaddr import IPNetwork, IPAddress, AddrConversionError, AddrFormatError
 import logging
 
 from django.http import HttpResponseBadRequest
@@ -39,7 +39,11 @@ class RestrictedSessionsMiddleware(object):
             remote_ip = remote_ip.ipv4()
             session_network.prefixlen = getattr(settings, 'RESTRICTEDSESSIONS_IPV4_LENGTH', 32)
         except AddrConversionError:
-            session_network.prefixlen = getattr(settings, 'RESTRICTEDSESSIONS_IPV6_LENGTH', 64)
+            try:
+                session_network.prefixlen = getattr(settings, 'RESTRICTEDSESSIONS_IPV6_LENGTH', 64)
+            except AddrFormatError:
+                # session_network must be IPv4, but remote_ip is IPv6
+                return False
         return remote_ip in session_network
 
     def validate_ua(self, request):

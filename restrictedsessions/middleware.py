@@ -20,7 +20,7 @@ class RestrictedSessionsMiddleware(object):
             return
 
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
-            logger.warning("Destroyed session due to invalid change of remote host or user agent. Username: {user}".format(user=request.user))
+            logger.warning("Destroyed session due to invalid change of remote host or user agent. IP: {ip}".format(ip=remote_addr))
             request.session.flush()
 
         request.session[SESSION_IP_KEY] = remote_addr

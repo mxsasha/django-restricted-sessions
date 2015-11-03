@@ -102,7 +102,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         if invalid:
             self.request.session['canary'] = 'canary'
             self.request.META['REMOTE_ADDR'] = invalid
-            self.assertEqual(self.middleware.process_request(self.request).status_code, 400)
+            self.assertIsNone(self.middleware.process_request(self.request))
             self.assertFalse('canary' in self.request.session)
 
     def test_validates_ua(self):
@@ -112,7 +112,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.assertTrue(self.middleware.process_request(self.request) is None)
 
         self.request.META['HTTP_USER_AGENT'] = 'test-ua2'
-        self.assertEqual(self.middleware.process_request(self.request).status_code, 400)
+        self.assertIsNone(self.middleware.process_request(self.request))
 
     @override_settings(RESTRICTEDSESSIONS_RESTRICT_IP=False)
     def test_disable_ip_validation(self):

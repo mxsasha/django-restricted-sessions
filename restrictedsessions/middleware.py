@@ -4,14 +4,23 @@ import logging
 
 from django.http import HttpResponseBadRequest
 from django.conf import settings
+from django.contrib.auth import logout
 
 SESSION_IP_KEY = '_restrictedsessions_ip'
 SESSION_UA_KEY = '_restrictedsessions_ua'
+AUTHED_ONLY = getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False)
+
 logger = logging.getLogger('restrictedsessions')
+
 
 class RestrictedSessionsMiddleware(object):
     def process_request(self, request):
         if not hasattr(request, 'session'):
+            return
+
+        # Only perform check if there is a user and user is authenticated
+        user = getattr(request, 'user', None)
+        if AUTHED_ONLY and (user is None or not user.is_authenticated()):
             return
 
         remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
@@ -22,6 +31,8 @@ class RestrictedSessionsMiddleware(object):
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
             logger.warning("Destroyed session due to invalid change of remote host or user agent. IP: {ip}".format(ip=remote_addr))
             request.session.flush()
+            if user is not None and user.is_authenticated():
+                logout(request)
 
         request.session[SESSION_IP_KEY] = remote_addr
         if request.META.get('HTTP_USER_AGENT'):

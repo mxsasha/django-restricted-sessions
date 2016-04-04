@@ -25,10 +25,10 @@ class RestrictedSessionsMiddleware(object):
                 return
 
         remote_ip = request.META.get(getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR'))
-        user_agent = request.META.get('HTTP_USER_AGENT')
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
 
         orig_remote_ip = request.session.get(SESSION_IP_KEY)
-        orig_user_agent = request.session.get(SESSION_UA_KEY)
+        orig_user_agent = request.session.get(SESSION_UA_KEY, None)
 
         if not self.same_ip(orig_remote_ip, remote_ip):
             logger.warning("Destroyed session due to IP change: %s != %s", remote_ip, orig_remote_ip)
@@ -70,6 +70,10 @@ class RestrictedSessionsMiddleware(object):
     def same_ua(cls, orig_user_agent, user_agent):
         # Check is disabled -- always return true
         if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_UA', True):
+            return True
+
+        # No original user agent
+        if orig_user_agent is None:
             return True
 
         # User agent is identical

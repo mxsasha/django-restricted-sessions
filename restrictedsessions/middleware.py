@@ -30,9 +30,11 @@ class RestrictedSessionsMiddleware(object):
         orig_remote_ip = request.session.get(SESSION_IP_KEY)
         orig_user_agent = request.session.get(SESSION_UA_KEY)
 
-        if not self.same_ip(orig_remote_ip, remote_ip) or not self.same_ua(orig_user_agent, user_agent):
-            logger.warning("Destroyed session due to invalid change of remote host or user agent. IP: {ip}".format(ip=remote_ip))
-            # Django would take care about flushing session and checking user
+        if not self.same_ip(orig_remote_ip, remote_ip):
+            logger.warning("Destroyed session due to IP change: %s != %s", remote_ip, orig_remote_ip)
+            logout(request)
+        elif not self.same_ua(orig_user_agent, user_agent):
+            logger.warning("Destroyed session due to user agent change: %s != %s", user_agent, orig_user_agent)
             logout(request)
 
         request.session[SESSION_IP_KEY] = remote_ip

@@ -7,11 +7,6 @@ from django.contrib.auth import logout
 
 SESSION_IP_KEY = '_restrictedsessions_ip'
 SESSION_UA_KEY = '_restrictedsessions_ua'
-AUTHED_ONLY = getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False)
-IP_HEADER = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
-UA_HEADER = 'HTTP_USER_AGENT'
-IPV4_LENGTH = getattr(settings, 'RESTRICTEDSESSIONS_IPV4_LENGTH', 32)
-IPV6_LENGTH = getattr(settings, 'RESTRICTEDSESSIONS_IPV6_LENGTH', 64)
 
 logger = logging.getLogger('restrictedsessions')
 
@@ -23,14 +18,14 @@ class RestrictedSessionsMiddleware(object):
             return
 
         # Only if option is enabled
-        if AUTHED_ONLY:
+        if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
             user = getattr(request, 'user', None)
             # No logged in user -- ignore checks
             if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
                 return
 
-        remote_ip = request.META.get(IP_HEADER)
-        user_agent = request.META.get(UA_HEADER)
+        remote_ip = request.META.get(getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR'))
+        user_agent = request.META.get('HTTP_USER_AGENT')
 
         orig_remote_ip = request.session.get(SESSION_IP_KEY)
         orig_user_agent = request.session.get(SESSION_UA_KEY)
@@ -58,10 +53,10 @@ class RestrictedSessionsMiddleware(object):
         try:
             session_network = session_network.ipv4()
             remote_ip = remote_ip.ipv4()
-            session_network.prefixlen = IPV4_LENGTH
+            session_network.prefixlen = getattr(settings, 'RESTRICTEDSESSIONS_IPV4_LENGTH', 32)
         except AddrConversionError:
             try:
-                session_network.prefixlen = IPV6_LENGTH
+                session_network.prefixlen = getattr(settings, 'RESTRICTEDSESSIONS_IPV6_LENGTH', 64)
             except AddrFormatError:
                 # session_network must be IPv4, but remote_ip is IPv6
                 return False

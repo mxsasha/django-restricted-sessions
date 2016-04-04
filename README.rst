@@ -40,3 +40,11 @@ Then add it to your middleware after SessionMiddleware::
         ....
     ]
 
+If you enabled RESTRICTEDSESSIONS_AUTHED_ONLY -- add if after AuthenticationMiddleware (so request.user is present):
+
+    MIDDLEWARE_CLASSES = [
+        ....
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'restrictedsessions.middleware.RestrictedSessionsMiddleware',
+        ....
+    ]

@@ -2,7 +2,6 @@
 from netaddr import IPNetwork, IPAddress, AddrConversionError, AddrFormatError
 import logging
 
-from django.http import HttpResponseBadRequest
 from django.conf import settings
 from django.contrib.auth import logout
 
@@ -19,32 +18,42 @@ logger = logging.getLogger('restrictedsessions')
 
 class RestrictedSessionsMiddleware(object):
     def process_request(self, request):
+        # No session -- nothing to check
         if not hasattr(request, 'session'):
             return
 
-        # Only perform check if there is a user and user is authenticated
-        user = getattr(request, 'user', None)
-        if AUTHED_ONLY and (user is None or not user.is_authenticated()):
-            return
+        # Only if option is enabled
+        if AUTHED_ONLY:
+            user = getattr(request, 'user', None)
+            # No logged in user -- ignore checks
+            if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
+                return
 
-        remote_addr = request.META.get(IP_HEADER)
-        if not remote_addr:
-            return
+        remote_ip = request.META.get(IP_HEADER)
+        user_agent = request.META.get(UA_HEADER)
 
-        if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
-            logger.warning("Destroyed session due to invalid change of remote host or user agent. IP: {ip}".format(ip=remote_addr))
+        orig_remote_ip = request.session.get(SESSION_IP_KEY)
+        orig_user_agent = request.session.get(SESSION_UA_KEY)
+
+        if not self.same_ip(orig_remote_ip, remote_ip) or not self.same_ua(orig_user_agent, user_agent):
+            logger.warning("Destroyed session due to invalid change of remote host or user agent. IP: {ip}".format(ip=remote_ip))
             # Django would take care about flushing session and checking user
             logout(request)
 
-        request.session[SESSION_IP_KEY] = remote_addr
-        if request.META.get(UA_HEADER):
-            request.session[SESSION_UA_KEY] = request.META[UA_HEADER]
+        request.session[SESSION_IP_KEY] = remote_ip
+        request.session[SESSION_UA_KEY] = user_agent
 
-    def validate_ip(self, request, remote_ip):
-        if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_IP', True) or not SESSION_IP_KEY in request.session:
+    @classmethod
+    def same_ip(cls, orig_remote_ip, remote_ip):
+        # Check is disabled -- always return true
+        if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_IP', True):
             return True
 
-        session_network = IPNetwork(request.session[SESSION_IP_KEY])
+        # No original IP or current IP is unknown
+        if not orig_remote_ip or not remote_ip:
+            return True
+
+        session_network = IPNetwork(orig_remote_ip)
         remote_ip = IPAddress(remote_ip)
         try:
             session_network = session_network.ipv4()
@@ -56,9 +65,15 @@ class RestrictedSessionsMiddleware(object):
             except AddrFormatError:
                 # session_network must be IPv4, but remote_ip is IPv6
                 return False
+
+        # IP belongs to the same network
         return remote_ip in session_network
 
-    def validate_ua(self, request):
-        if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_UA', True) or not SESSION_UA_KEY in request.session:
+    @classmethod
+    def same_ua(cls, orig_user_agent, user_agent):
+        # Check is disabled -- always return true
+        if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_UA', True):
             return True
-        return request.session[SESSION_UA_KEY] == request.META.get(UA_HEADER)
+
+        # User agent is identical
+        return user_agent == orig_user_agent

@@ -25,10 +25,11 @@ class RestrictedSessionsMiddleware(object):
                 return
 
         remote_ip = request.META.get(getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR'))
-        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        # User agent could be missing -> need to distinquish when user agent is empty or not yet in the session
+        user_agent = request.META.get('HTTP_USER_AGENT', '')    # => would be "" if user agent is not set
 
         orig_remote_ip = request.session.get(SESSION_IP_KEY)
-        orig_user_agent = request.session.get(SESSION_UA_KEY, None)
+        orig_user_agent = request.session.get(SESSION_UA_KEY)   # => would be None if not yet in the session
 
         if not self.same_ip(orig_remote_ip, remote_ip):
             logger.warning("Destroyed session due to IP change: %s != %s", remote_ip, orig_remote_ip)

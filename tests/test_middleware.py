@@ -179,6 +179,19 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
             self.assertEqual(self.middleware.process_request(self.request).status_code, 400)
             self.assertFalse('canary' in self.request.session)
 
+    def test_ip_was_known_now_absent(self):
+        # Given: A session with a known ip
+        session_ip = '127.0.0.1'
+        self.add_session_to_request()
+        self.request.session[middleware.SESSION_IP_KEY] = session_ip
+        # When: Incoming request doesn't have Remote address
+        self.request.META['REMOTE_ADDR'] = None
+        response = self.middleware.process_request(self.request)
+        # Then: there was an HttpResponse returned from middleware
+        self.assertIsInstance(response, HttpResponse)
+        # Then: the response defaults to 400 error
+        self.assertEqual(response.status_code, 400)
+
     def test_validates_ua(self):
         self.add_session_to_request()
         self.request.META['HTTP_USER_AGENT'] = 'test-ua1'

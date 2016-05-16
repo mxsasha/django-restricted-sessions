@@ -2,7 +2,9 @@
 from netaddr import IPNetwork, IPAddress, AddrConversionError, AddrFormatError
 import logging
 
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 from django.conf import settings
 
 SESSION_IP_KEY = '_restrictedsessions_ip'
@@ -22,9 +24,14 @@ class RestrictedSessionsMiddleware(object):
 
         # Clear the session and handle response when request doesn't validate
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
-            request.session.flush()
             logger.warning("Destroyed session due to invalid change of remote host or user agent")
-            return HttpResponseBadRequest()
+            request.session.flush()
+            redirect_view = getattr(settings, 'RESTRICTEDSESSIONS_REDIRECT_VIEW', None)
+            if redirect_view:
+                return redirect(reverse(redirect_view))
+            else:
+                status = getattr(settings, 'RESTRICTEDSESSIONS_FAILURE_STATUS', 400)
+                return HttpResponse(status=status)
 
         # Set the UA/IP Address on the session since they validated correctly
         request.session[SESSION_IP_KEY] = remote_addr

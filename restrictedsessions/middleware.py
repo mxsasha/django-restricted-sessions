@@ -2,37 +2,56 @@
 from netaddr import IPNetwork, IPAddress, AddrConversionError, AddrFormatError
 import logging
 
-from django.http import HttpResponseBadRequest
 from django.conf import settings
+from django.contrib.auth import logout
 
 SESSION_IP_KEY = '_restrictedsessions_ip'
 SESSION_UA_KEY = '_restrictedsessions_ua'
+
 logger = logging.getLogger('restrictedsessions')
+
 
 class RestrictedSessionsMiddleware(object):
     def process_request(self, request):
+        # No session -- nothing to check
         if not hasattr(request, 'session'):
             return
 
-        remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
-        remote_addr = request.META.get(remote_addr_key)
-        if not remote_addr:
-            return
+        # Only if option is enabled
+        if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
+            user = getattr(request, 'user', None)
+            # No logged in user -- ignore checks
+            if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
+                return
 
-        if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
-            request.session.flush()
-            logger.warning("Destroyed session due to invalid change of remote host or user agent")
-            return HttpResponseBadRequest()
+        remote_ip = request.META.get(getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR'))
+        # User agent could be missing -> need to distinquish when user agent is empty or not yet in the session
+        user_agent = request.META.get('HTTP_USER_AGENT', '')    # => would be "" if user agent is not set
 
-        request.session[SESSION_IP_KEY] = remote_addr
-        if request.META.get('HTTP_USER_AGENT'):
-            request.session[SESSION_UA_KEY] = request.META['HTTP_USER_AGENT']
+        orig_remote_ip = request.session.get(SESSION_IP_KEY)
+        orig_user_agent = request.session.get(SESSION_UA_KEY)   # => would be None if not yet in the session
 
-    def validate_ip(self, request, remote_ip):
-        if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_IP', True) or not SESSION_IP_KEY in request.session:
+        if not self.same_ip(orig_remote_ip, remote_ip):
+            logger.warning("Destroyed session due to IP change: %s != %s", remote_ip, orig_remote_ip)
+            logout(request)
+        elif not self.same_ua(orig_user_agent, user_agent):
+            logger.warning("Destroyed session due to user agent change: %s != %s", user_agent, orig_user_agent)
+            logout(request)
+
+        request.session[SESSION_IP_KEY] = remote_ip
+        request.session[SESSION_UA_KEY] = user_agent
+
+    @classmethod
+    def same_ip(cls, orig_remote_ip, remote_ip):
+        # Check is disabled -- always return true
+        if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_IP', True):
             return True
 
-        session_network = IPNetwork(request.session[SESSION_IP_KEY])
+        # No original IP or current IP is unknown
+        if not orig_remote_ip or not remote_ip:
+            return True
+
+        session_network = IPNetwork(orig_remote_ip)
         remote_ip = IPAddress(remote_ip)
         try:
             session_network = session_network.ipv4()
@@ -44,9 +63,19 @@ class RestrictedSessionsMiddleware(object):
             except AddrFormatError:
                 # session_network must be IPv4, but remote_ip is IPv6
                 return False
+
+        # IP belongs to the same network
         return remote_ip in session_network
 
-    def validate_ua(self, request):
-        if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_UA', True) or not SESSION_UA_KEY in request.session:
+    @classmethod
+    def same_ua(cls, orig_user_agent, user_agent):
+        # Check is disabled -- always return true
+        if not getattr(settings, 'RESTRICTEDSESSIONS_RESTRICT_UA', True):
             return True
-        return request.session[SESSION_UA_KEY] == request.META.get('HTTP_USER_AGENT')
+
+        # No original user agent
+        if orig_user_agent is None:
+            return True
+
+        # User agent is identical
+        return user_agent == orig_user_agent

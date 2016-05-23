@@ -10,4 +10,6 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Matt Davis <matteius@gmail.com>
+* Rainer Koirikivi <rainer@koirikivi.fi>
+*

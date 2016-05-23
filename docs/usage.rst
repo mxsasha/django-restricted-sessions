@@ -42,6 +42,13 @@ The following settings are available:
    128 means the full address must be equal. 64 means that a change from 2001:db8::1 to 2001:db8::3 is allowed, but not
    to 2001:db9::1. Setting this to 128 is not recommended, as it will cause frequent session invalidation if clients
    use IPv6 privacy extensions.
+ * ``RESTRICTEDSESSIONS_REDIRECT_VIEW`` (string, default: None): when this value is set to be a known view
+ configured within the project's ROOT_URLCONF, then any failure of the session validation will redirect to this
+ location after the session is cleared/flushed.
+ *
+ ``RESTRICTEDSESSIONS_FAILURE_STATUS`` (int, default: 400) the HTTP status code to return when
+  not utilizing RESTRICTEDSESSIONS_REDIRECT_VIEW setting such that any failure of the session validation
+   will return this status code.
 
 
 How much added security does this offer?

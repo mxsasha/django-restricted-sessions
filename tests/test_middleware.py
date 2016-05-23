@@ -13,6 +13,7 @@ import unittest
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.http import HttpResponse
 
 from restrictedsessions import middleware
 
@@ -33,6 +34,79 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.assertTrue(self.middleware.process_request(self.request) is None)
         self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
         self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is None)
+
+    def test_without_remote_addr_still_check_user_agent(self):
+        # Given: No remote IP incoming
+        self.add_session_to_request()
+        del self.request.META['REMOTE_ADDR']
+        # Given: First request has an arbitrary User Agent string
+        initial_user_agent = 'ua-initial'
+        self.request.META['HTTP_USER_AGENT'] = initial_user_agent
+        # When: the middleware first sees the request
+        self.assertTrue(self.middleware.process_request(self.request) is None)
+        # Then: it sets only the user agent string
+        self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
+        self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is initial_user_agent)
+
+        # Given: A second request is made with a new user agent string
+        different_user_agent = 'us-changed'
+        self.request.META['HTTP_USER_AGENT'] = different_user_agent
+        # When: the middleware first sees the request
+        response = self.middleware.process_request(self.request)
+        # Then: there was an HttpResponse returned from middleware
+        self.assertIsInstance(response, HttpResponse)
+        # Then: the response was a HTTP 400 status response by default
+        self.assertEqual(response.status_code, 400)
+
+    @override_settings(RESTRICTEDSESSIONS_FAILURE_STATUS=404)
+    def test_without_remote_addr_still_check_user_agent_when_configured_status(self):
+        # Given: No remote IP incoming
+        self.add_session_to_request()
+        del self.request.META['REMOTE_ADDR']
+        # Given: First request has an arbitrary User Agent string
+        initial_user_agent = 'ua-initial'
+        self.request.META['HTTP_USER_AGENT'] = initial_user_agent
+        # When: the middleware first sees the request
+        self.assertTrue(self.middleware.process_request(self.request) is None)
+        # Then: it sets only the user agent string
+        self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
+        self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is initial_user_agent)
+
+        # Given: A second request is made with a new user agent string
+        different_user_agent = 'us-changed'
+        self.request.META['HTTP_USER_AGENT'] = different_user_agent
+        # When: the middleware first sees the request
+        response = self.middleware.process_request(self.request)
+        # Then: there was an HttpResponse returned from middleware
+        self.assertIsInstance(response, HttpResponse)
+        # Then: the response was a HTTP 400 status response by default
+        self.assertEqual(response.status_code, 404)
+
+    @override_settings(RESTRICTEDSESSIONS_REDIRECT_VIEW='test_view')
+    def test_without_remote_addr_still_check_user_agent_when_redirect(self):
+        # Given: No remote IP incoming
+        self.add_session_to_request()
+        del self.request.META['REMOTE_ADDR']
+        # Given: First request has an arbitrary User Agent string
+        initial_user_agent = 'ua-initial'
+        self.request.META['HTTP_USER_AGENT'] = initial_user_agent
+        # When: the middleware first sees the request
+        self.assertTrue(self.middleware.process_request(self.request) is None)
+        # Then: it sets only the user agent string
+        self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
+        self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is initial_user_agent)
+
+        # Given: A second request is made with a new user agent string
+        different_user_agent = 'us-changed'
+        self.request.META['HTTP_USER_AGENT'] = different_user_agent
+        # When: the middleware first sees the request
+        response = self.middleware.process_request(self.request)
+        # Then: there was an HttpResponse returned from middleware
+        self.assertIsInstance(response, HttpResponse)
+        # Then: the response was an HTTP redirect to the test view
+        self.assertEqual(response.status_code, 302)
+        # Then: the URL is the view from the settings override
+        self.assertEqual(response.url, '/test_view/')
 
     @override_settings(RESTRICTEDSESSIONS_REMOTE_ADDR_KEY='CUSTOM_REMOTE_ADDR')
     def test_without_remote_addr_with_custom_key(self):
@@ -104,6 +178,19 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
             self.request.META['REMOTE_ADDR'] = invalid
             self.assertEqual(self.middleware.process_request(self.request).status_code, 400)
             self.assertFalse('canary' in self.request.session)
+
+    def test_ip_was_known_now_absent(self):
+        # Given: A session with a known ip
+        session_ip = '127.0.0.1'
+        self.add_session_to_request()
+        self.request.session[middleware.SESSION_IP_KEY] = session_ip
+        # When: Incoming request doesn't have Remote address
+        self.request.META['REMOTE_ADDR'] = None
+        response = self.middleware.process_request(self.request)
+        # Then: there was an HttpResponse returned from middleware
+        self.assertIsInstance(response, HttpResponse)
+        # Then: the response defaults to 400 error
+        self.assertEqual(response.status_code, 400)
 
     def test_validates_ua(self):
         self.add_session_to_request()

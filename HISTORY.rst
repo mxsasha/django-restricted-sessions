@@ -3,6 +3,12 @@
 History
 -------
 
+0.1.3 (2016-05-23)
+++++++++++++++++++
+
+* Added support to redirect to known view, or use custom status code settings.
+* Fixed short circuit when REMOTE_ADDR was unknown.
+
 0.1.2 (2014-03-20)
 ++++++++++++++++++
 

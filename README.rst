@@ -36,7 +36,10 @@ Then add it to your middleware after SessionMiddleware::
     MIDDLEWARE_CLASSES = [
         ....
         'django.contrib.sessions.middleware.SessionMiddleware',
+        # 'django.contrib.auth.middleware.AuthenticationMiddleware',
         'restrictedsessions.middleware.RestrictedSessionsMiddleware',
         ....
     ]
 
+When RESTRICTEDSESSIONS_AUTHED_ONLY setting enabled ensure this middleware is added after AuthenticationMiddleware
+such that the `request.user` is present.

@@ -41,5 +41,5 @@ Then add it to your middleware after SessionMiddleware::
         ....
     ]
 
-When RESTRICTEDSESSIONS_AUTHED_ONLY setting enabled ensure this middleware is added after AuthenticationMiddleware
-such that the `request.user` is present.
+When ``RESTRICTEDSESSIONS_AUTHED_ONLY`` setting enabled ensure this middleware is added after
+``AuthenticationMiddleware`` such that the ``request.user`` is present.

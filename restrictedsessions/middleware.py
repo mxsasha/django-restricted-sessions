@@ -5,10 +5,12 @@ import logging
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
+
 from django.conf import settings
 
 SESSION_IP_KEY = '_restrictedsessions_ip'
 SESSION_UA_KEY = '_restrictedsessions_ua'
+
 logger = logging.getLogger('restrictedsessions')
 
 
@@ -18,14 +20,25 @@ class RestrictedSessionsMiddleware(object):
         if not hasattr(request, 'session'):
             return
 
+        # Short circuit for option to require authed users
+        if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
+            user = getattr(request, 'user', None)
+            # No logged in user -- ignore checks
+            if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
+                return
+
         # Extract remote IP address for validation purposes
         remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
         remote_addr = request.META.get(remote_addr_key)
 
         # Clear the session and handle response when request doesn't validate
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
+            if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
+                from django.contrib.auth import logout
+                logout(request)
+            else:  # logout(...) flushes the session so ensure it only happens once
+                request.session.flush()
             logger.warning("Destroyed session due to invalid change of remote host or user agent")
-            request.session.flush()
             redirect_view = getattr(settings, 'RESTRICTEDSESSIONS_REDIRECT_VIEW', None)
             if redirect_view:
                 return redirect(reverse(redirect_view))

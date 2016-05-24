@@ -12,6 +12,7 @@ import unittest
 
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
 
@@ -212,9 +213,22 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.request.META['HTTP_USER_AGENT'] = 'test-ua2'
         self.assertTrue(self.middleware.process_request(self.request) is None)
 
+    @override_settings(RESTRICTEDSESSIONS_AUTHED_ONLY=True)
+    def test_only_authed_users_setting(self):
+        self.add_session_to_request()
+        self.request.user = AnonymousUser()
+        self.assertIsNone(self.middleware.process_request(self.request))
+
+        self.request.user = User(username='test')
+        self.assertIsNone(self.middleware.process_request(self.request))
+        self._remote_addr_test(session_ip='127.0.0.1', valid='127.0.0.1',
+                               invalid='127.0.0.2')
+        self.assertIsInstance(self.request.user, AnonymousUser)
+
     def add_session_to_request(self):
         middleware = SessionMiddleware()
         middleware.process_request(self.request)
         self.request.session.save()
         # Trigger saving the session
         self.request.session['foo'] = 'foo'
+

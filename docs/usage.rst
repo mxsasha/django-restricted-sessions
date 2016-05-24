@@ -45,10 +45,11 @@ The following settings are available:
  * ``RESTRICTEDSESSIONS_REDIRECT_VIEW`` (string, default: None): when this value is set to be a known view
  configured within the project's ROOT_URLCONF, then any failure of the session validation will redirect to this
  location after the session is cleared/flushed.
- *
- ``RESTRICTEDSESSIONS_FAILURE_STATUS`` (int, default: 400) the HTTP status code to return when
+ * ``RESTRICTEDSESSIONS_FAILURE_STATUS`` (int, default: 400) the HTTP status code to return when
   not utilizing RESTRICTEDSESSIONS_REDIRECT_VIEW setting such that any failure of the session validation
    will return this status code.
+ * ``RESTRICTEDSESSIONS_AUTHED_ONLY`` (bool, default: False) when set to true, only restricts the sessions
+ for authenticated users.  Utilizes the `django.contrib.auth.logout` method to invalidate the session when enabled.
 
 
 How much added security does this offer?

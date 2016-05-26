@@ -3,11 +3,14 @@
 History
 -------
 
-0.1.3 (2016-05-23)
+0.1.3 (2016-05-26)
 ++++++++++++++++++
 
 * Added support to redirect to known view, or use custom status code settings.
+* Added support for ignoring unauthenticated sessions.
 * Fixed short circuit when REMOTE_ADDR was unknown.
+* Dropped support for older Python versions: now requires 2.7, 3.3 or newer,
+  with Django 1.8.
 
 0.1.2 (2014-03-20)
 ++++++++++++++++++

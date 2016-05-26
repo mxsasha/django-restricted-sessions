@@ -12,4 +12,4 @@ Contributors
 
 * Matt Davis <matteius@gmail.com>
 * Rainer Koirikivi <rainer@koirikivi.fi>
-*
+

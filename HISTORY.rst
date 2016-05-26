@@ -3,6 +3,11 @@
 History
 -------
 
+0.1.3.1 (2016-05-26)
+++++++++++++++++++++
+
+* Version bump to avoid PyPI's duplicate filename ban.
+
 0.1.3 (2016-05-26)
 ++++++++++++++++++
 

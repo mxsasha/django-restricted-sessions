@@ -8,6 +8,8 @@ test_django-restricted-sessions
 Tests for `django-restricted-sessions` models module.
 """
 
+from __future__ import unicode_literals
+
 import unittest
 
 from django.test.client import RequestFactory
@@ -47,7 +49,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.assertTrue(self.middleware.process_request(self.request) is None)
         # Then: it sets only the user agent string
         self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
-        self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is initial_user_agent)
+        self.assertEqual(self.request.session.get(middleware.SESSION_UA_KEY), initial_user_agent)
 
         # Given: A second request is made with a new user agent string
         different_user_agent = 'us-changed'
@@ -71,7 +73,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.assertTrue(self.middleware.process_request(self.request) is None)
         # Then: it sets only the user agent string
         self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
-        self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is initial_user_agent)
+        self.assertEqual(self.request.session.get(middleware.SESSION_UA_KEY), initial_user_agent)
 
         # Given: A second request is made with a new user agent string
         different_user_agent = 'us-changed'
@@ -95,7 +97,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.assertTrue(self.middleware.process_request(self.request) is None)
         # Then: it sets only the user agent string
         self.assertTrue(self.request.session.get(middleware.SESSION_IP_KEY) is None)
-        self.assertTrue(self.request.session.get(middleware.SESSION_UA_KEY) is initial_user_agent)
+        self.assertEqual(self.request.session.get(middleware.SESSION_UA_KEY), initial_user_agent)
 
         # Given: A second request is made with a new user agent string
         different_user_agent = 'us-changed'
@@ -195,11 +197,12 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
 
     def test_validates_ua(self):
         self.add_session_to_request()
-        self.request.META['HTTP_USER_AGENT'] = 'test-ua1'
-        self.request.session[middleware.SESSION_UA_KEY] = 'test-ua1'
+        # Non-UTF8 chars should be replaced with \ufffd (replacement character).
+        self.request.META['HTTP_USER_AGENT'] = b'test-ua1\xd9'
+        self.request.session[middleware.SESSION_UA_KEY] = 'test-ua1\ufffd'
         self.assertTrue(self.middleware.process_request(self.request) is None)
 
-        self.request.META['HTTP_USER_AGENT'] = 'test-ua2'
+        self.request.META['HTTP_USER_AGENT'] = 'test-ua1'
         self.assertEqual(self.middleware.process_request(self.request).status_code, 400)
 
     @override_settings(RESTRICTEDSESSIONS_RESTRICT_IP=False)

@@ -3,6 +3,12 @@
 History
 -------
 
+0.1.4 (2016-07-02)
+++++++++++++++++++
+
+* Fixed an exception that could occur when non-utf8 bytes were included
+  in user agent strings.
+
 0.1.3.1 (2016-05-26)
 ++++++++++++++++++++
 

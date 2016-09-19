@@ -22,8 +22,8 @@ class RestrictedSessionsMiddleware(object):
             return
 
         # Short circuit for option to require authed users
+        user = request.user
         if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
-            user = getattr(request, 'user', None)
             # No logged in user -- ignore checks
             if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
                 return

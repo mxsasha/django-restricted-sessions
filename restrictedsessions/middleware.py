@@ -29,8 +29,14 @@ class RestrictedSessionsMiddleware(object):
                 return
 
         # Extract remote IP address for validation purposes
-        remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
-        remote_addr = request.META.get(remote_addr_key)
+        if getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', False):
+            remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY')
+            remote_addr = request.META.get(remote_addr_key)
+        else:
+            if request.META.get('HTTP_X_FORWARDED_FOR', False):
+                remote_addr = request.META.get('HTTP_X_FORWARDED_FOR')
+            else:
+                remote_addr = request.META.get('REMOTE_ADDR')
 
         # Clear the session and handle response when request doesn't validate
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):

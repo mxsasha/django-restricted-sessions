@@ -39,7 +39,9 @@ class RestrictedSessionsMiddleware(object):
                 logout(request)
             else:  # logout(...) flushes the session so ensure it only happens once
                 request.session.flush()
-            logger.warning("Destroyed session due to invalid change of remote host or user agent")
+
+            self.log_session_destroyed(user, self.validate_ip(request, remote_addr), self.validate_ua(request))
+
             redirect_view = getattr(settings, 'RESTRICTEDSESSIONS_REDIRECT_VIEW', None)
             if redirect_view:
                 return redirect(reverse(redirect_view))
@@ -91,3 +93,17 @@ class RestrictedSessionsMiddleware(object):
             return True
         # Compare the new user agent value with what is known about the session
         return request.session[SESSION_UA_KEY] == force_text(request.META['HTTP_USER_AGENT'], errors='replace')
+
+    def log_session_destroyed(self, user, is_valid_ip, is_valid_ua):
+        """ This method has the purpouse of separate the logging from the rest
+            of the logic, and to give more debug options
+        """
+        if getattr(user, 'id', None):
+            user_msg = 'the user with id {id}'.format(id=user.id)
+        else:
+            user_msg = 'an anonymous user'
+        if is_valid_ip:
+            reason_msg = 'change of remote host'
+        elif is_valid_ua:
+            reason_msg = 'change of user agent'
+        logger.warning('Destroyed session of {user_msg} due to {reason_msg}'.format(user_msg=user_msg, reason_msg=reason_msg))

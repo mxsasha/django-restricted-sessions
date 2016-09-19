@@ -22,7 +22,7 @@ class RestrictedSessionsMiddleware(object):
             return
 
         # Short circuit for option to require authed users
-        user = request.user
+        user = getattr(request, 'user', None)
         if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
             # No logged in user -- ignore checks
             if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
@@ -98,7 +98,7 @@ class RestrictedSessionsMiddleware(object):
         """ This method has the purpouse of separate the logging from the rest
             of the logic, and to give more debug options
         """
-        if getattr(user, 'id', None):
+        if user and getattr(user, 'id', None):
             user_msg = 'the user with id {id}'.format(id=user.id)
         else:
             user_msg = 'an anonymous user'

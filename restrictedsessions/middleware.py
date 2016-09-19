@@ -40,7 +40,7 @@ class RestrictedSessionsMiddleware(object):
             else:  # logout(...) flushes the session so ensure it only happens once
                 request.session.flush()
 
-            self.log_session_destroyed(user, self.validate_ip(request, remote_addr), self.validate_ua(request))
+            logger.warning("Destroyed session due to invalid change of remote host or user agent")
 
             redirect_view = getattr(settings, 'RESTRICTEDSESSIONS_REDIRECT_VIEW', None)
             if redirect_view:
@@ -82,7 +82,11 @@ class RestrictedSessionsMiddleware(object):
             except AddrFormatError:
                 # session_network must be IPv4, but remote_ip is IPv6
                 return False
-        return remote_ip in session_network
+        is_ip_valid = remote_ip in session_network
+        if not is_ip_valid:
+            log_message = 'Invalid ip {ip}, it is not present in the session network: {session_network}'
+            logger.warning(log_message.format(ip=remote_ip, session_network=session_network))
+        return is_ip_valid
 
     def validate_ua(self, request):
         # When we aren't configured to restrict on user agent
@@ -92,18 +96,10 @@ class RestrictedSessionsMiddleware(object):
         if SESSION_UA_KEY not in request.session:
             return True
         # Compare the new user agent value with what is known about the session
-        return request.session[SESSION_UA_KEY] == force_text(request.META['HTTP_USER_AGENT'], errors='replace')
-
-    def log_session_destroyed(self, user, is_valid_ip, is_valid_ua):
-        """ This method has the purpouse of separate the logging from the rest
-            of the logic, and to give more debug options
-        """
-        if user and getattr(user, 'id', None):
-            user_msg = 'the user with id {id}'.format(id=user.id)
-        else:
-            user_msg = 'an anonymous user'
-        if is_valid_ip:
-            reason_msg = 'change of remote host'
-        elif is_valid_ua:
-            reason_msg = 'change of user agent'
-        logger.warning('Destroyed session of {user_msg} due to {reason_msg}'.format(user_msg=user_msg, reason_msg=reason_msg))
+        ua = force_text(request.META['HTTP_USER_AGENT'])
+        session_ua = request.session[SESSION_UA_KEY]
+        is_ua_valid = session_ua == ua
+        if not is_ua_valid:
+            log_message = 'Invalid ua {ua}, it does not match the session ua {session_ua}'
+            logger.warning(log_message.format(ua=ua, session_ua=session_ua))
+        return is_ua_valid

@@ -35,6 +35,10 @@ class RestrictedSessionsMiddleware(object):
         else:
             if request.META.get('HTTP_X_FORWARDED_FOR', False):
                 remote_addr = request.META.get('HTTP_X_FORWARDED_FOR')
+                # in case of more than one proxy, XFF contain the list of the ip addresses in the format
+                # client, proxy1, proxy2
+                if ',' in remote_addr:
+                    remote_addr = remote_addr.split(',')[0]
             else:
                 remote_addr = request.META.get('REMOTE_ADDR')
 

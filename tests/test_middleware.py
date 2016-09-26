@@ -128,12 +128,28 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.assertEqual(self.request.session[middleware.SESSION_UA_KEY], self.request.META['HTTP_USER_AGENT'])
 
     @override_settings(RESTRICTEDSESSIONS_REMOTE_ADDR_KEY='CUSTOM_REMOTE_ADDR')
-    def test_saves_with_remote_addr_with_custom_key(self):
+    def test_saves_with_original_ip_with_custom_key(self):
         self.add_session_to_request()
         self.request.META['CUSTOM_REMOTE_ADDR'] = self.request.META['REMOTE_ADDR']
         del self.request.META['REMOTE_ADDR']
         self.assertTrue(self.middleware.process_request(self.request) is None)
         self.assertEqual(self.request.session[middleware.SESSION_IP_KEY], self.request.META['CUSTOM_REMOTE_ADDR'])
+
+    def test_x_forwarded_for_checked_before_original_ip(self):
+        self.add_session_to_request()
+        original_ip = self.request.META['REMOTE_ADDR']
+        self.request.META['REMOTE_ADDR'] = 'somenthing completly wrong'
+        self.request.META['HTTP_X_FORWARDED_FOR'] = original_ip
+        self.assertTrue(self.middleware.process_request(self.request) is None)
+        self.assertEqual(self.request.session[middleware.SESSION_IP_KEY], original_ip)
+
+    def test_x_forwarded_for_multiple_proxy(self):
+        self.add_session_to_request()
+        original_ip = self.request.META['REMOTE_ADDR']
+        self.request.META['REMOTE_ADDR'] = 'somenthing completly wrong'
+        self.request.META['HTTP_X_FORWARDED_FOR'] = original_ip + ', 0.0.0.1, 0.0.0.2'
+        self.assertTrue(self.middleware.process_request(self.request) is None)
+        self.assertEqual(self.request.session[middleware.SESSION_IP_KEY], original_ip)
 
     def test_validates_ipv4(self):
         self._remote_addr_test(session_ip='127.0.0.1', valid='127.0.0.1', invalid='127.0.0.2')
@@ -234,4 +250,3 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.request.session.save()
         # Trigger saving the session
         self.request.session['foo'] = 'foo'
-

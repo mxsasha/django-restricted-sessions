@@ -49,9 +49,7 @@ class RestrictedSessionsMiddleware(object):
                 logout(request)
             else:  # logout(...) flushes the session so ensure it only happens once
                 request.session.flush()
-
             logger.warning("Destroyed session due to invalid change of remote host or user agent")
-
             redirect_view = getattr(settings, 'RESTRICTEDSESSIONS_REDIRECT_VIEW', None)
             if redirect_view:
                 return redirect(reverse(redirect_view))

@@ -106,10 +106,12 @@ class RestrictedSessionsMiddleware(object):
         if SESSION_UA_KEY not in request.session:
             return True
         # Compare the new user agent value with what is known about the session
-        ua = force_text(request.META['HTTP_USER_AGENT'])
+        ua = force_text(request.META['HTTP_USER_AGENT'], errors='replace')
         session_ua = request.session[SESSION_UA_KEY]
         is_ua_valid = session_ua == ua
         if not is_ua_valid:
             log_message = 'Invalid ua {ua}, it does not match the session ua {session_ua}'
-            logger.warning(log_message.format(ua=ua, session_ua=session_ua))
+            encoded_ua = ua.encode('utf-8')
+            encoded_session_ua = session_ua.encode('utf-8')
+            logger.warning(log_message.format(ua=encoded_ua, session_ua=encoded_session_ua))
         return is_ua_valid

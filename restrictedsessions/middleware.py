@@ -22,8 +22,8 @@ class RestrictedSessionsMiddleware(object):
             return
 
         # Short circuit for option to require authed users
+        user = getattr(request, 'user', None)
         if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
-            user = getattr(request, 'user', None)
             # No logged in user -- ignore checks
             if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
                 return
@@ -39,7 +39,11 @@ class RestrictedSessionsMiddleware(object):
                 logout(request)
             else:  # logout(...) flushes the session so ensure it only happens once
                 request.session.flush()
-            logger.warning("Destroyed session due to invalid change of remote host or user agent")
+            logger.warning(
+                "Destroyed session due to invalid change of remote host or user agent",
+                user.username,
+                request.META.get('REMOTE_ADDR', None)
+            )
             redirect_view = getattr(settings, 'RESTRICTEDSESSIONS_REDIRECT_VIEW', None)
             if redirect_view:
                 return redirect(reverse(redirect_view))

@@ -2,12 +2,17 @@
 from netaddr import IPNetwork, IPAddress, AddrConversionError, AddrFormatError
 import logging
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.utils.encoding import force_text
 
-from django.conf import settings
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
+
 
 SESSION_IP_KEY = '_restrictedsessions_ip'
 SESSION_UA_KEY = '_restrictedsessions_ua'
@@ -15,7 +20,7 @@ SESSION_UA_KEY = '_restrictedsessions_ua'
 logger = logging.getLogger('restrictedsessions')
 
 
-class RestrictedSessionsMiddleware(object):
+class RestrictedSessionsMiddleware(MiddlewareMixin):
     def process_request(self, request):
         # Short circuit when request doesn't have session
         if not hasattr(request, 'session'):

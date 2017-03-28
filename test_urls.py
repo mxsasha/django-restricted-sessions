@@ -1,4 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
+try:
+    from django.conf.urls import patterns
+except ImportError:
+    patterns = lambda x**: list(x)
 from django.http import HttpResponse
 
 

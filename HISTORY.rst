@@ -3,6 +3,13 @@
 History
 -------
 
+0.2.0 (2017-04-06)
+++++++++++++++++++
+
+* For Django 1.10+ support, changed from `object` to `django.utils.deprecation.MiddlewareMixin`
+* Added PyPI trove classifiers for Django versions and more Python versions
+* Updated `travis.yml` for more Python versions
+
 0.1.4 (2016-07-02)
 ++++++++++++++++++
 

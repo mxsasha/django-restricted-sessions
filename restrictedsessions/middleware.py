@@ -37,6 +37,10 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
         remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
         remote_addr = request.META.get(remote_addr_key)
 
+        # Check for multiple proxies - the left most IP is meant to be the origin
+        if remote_addr:
+            remote_addr = remote_addr.split(", ")[0]
+
         # Clear the session and handle response when request doesn't validate
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
             if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
@@ -66,6 +70,11 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
             return True
         # When there is no remote IP, check if one has been set on the session
         session_ip = request.session[SESSION_IP_KEY]
+
+        # Check for multiple proxies - the left most IP is meant to be the origin
+        if session_ip:
+            session_ip = session_ip.split(", ")[0]
+
         if not remote_ip:
             if session_ip:  # session has remote IP value so validate :-(
                 return False

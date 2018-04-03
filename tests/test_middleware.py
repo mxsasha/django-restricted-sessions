@@ -135,6 +135,10 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.assertTrue(self.middleware.process_request(self.request) is None)
         self.assertEqual(self.request.session[middleware.SESSION_IP_KEY], self.request.META['CUSTOM_REMOTE_ADDR'])
 
+    def test_use_leftmost_ip_if_multiple_present_in_remote_address(self):
+        """Allow for multiple IPs but use the left most"""
+        self._remote_addr_test(session_ip='127.0.0.1, 192.168.1.1', valid='127.0.0.1')
+
     def test_validates_ipv4(self):
         self._remote_addr_test(session_ip='127.0.0.1', valid='127.0.0.1', invalid='127.0.0.2')
 

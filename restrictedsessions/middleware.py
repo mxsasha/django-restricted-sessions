@@ -92,8 +92,8 @@ class RestrictedSessionsMiddleware(object):
                 return False
         is_ip_valid = remote_ip in session_network
         if not is_ip_valid:
-            log_message = 'Invalid ip {ip}, it is not present in the session network: {session_network}'
-            logger.warning(log_message.format(ip=remote_ip, session_network=session_network))
+            log_message = 'Invalid ip %s, it is not present in the session network: %s'
+            logger.warning(log_message, remote_ip, session_network)
         return is_ip_valid
 
     def validate_ua(self, request):
@@ -108,8 +108,8 @@ class RestrictedSessionsMiddleware(object):
         session_ua = request.session[SESSION_UA_KEY]
         is_ua_valid = session_ua == ua
         if not is_ua_valid:
-            log_message = 'Invalid ua {ua}, it does not match the session ua {session_ua}'
+            log_message = 'Invalid ua %s, it does not match the session ua %s'
             encoded_ua = ua.encode('utf-8')
             encoded_session_ua = session_ua.encode('utf-8')
-            logger.warning(log_message.format(ua=encoded_ua, session_ua=encoded_session_ua))
+            logger.warning(log_message, encoded_ua, encoded_session_ua)
         return is_ua_valid

@@ -4,8 +4,8 @@ import logging
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.encoding import force_text
 
 try:

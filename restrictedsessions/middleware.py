@@ -4,7 +4,10 @@ import logging
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ModuleNotFoundError:
+    from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.utils.encoding import force_text
 

@@ -1,0 +1,14 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+autopep8 = "*"
+
+[packages]
+netaddr = ">=0.7.10"
+Django = ">=1.8.13"
+
+[requires]
+python_version = "3.7"

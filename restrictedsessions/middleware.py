@@ -95,4 +95,4 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
         if SESSION_UA_KEY not in request.session:
             return True
         # Compare the new user agent value with what is known about the session
-        return request.session[SESSION_UA_KEY] == force_text(request.META.get(['HTTP_USER_AGENT']), errors='replace')
+        return request.session[SESSION_UA_KEY] == force_text(request.META.get('HTTP_USER_AGENT'), errors='replace')

@@ -33,6 +33,11 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
             if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
                 return
 
+        # Unauthorize if the request contains no headers
+        if not request.headers:
+            status = getattr(settings, 'RESTRICTEDSESSIONS_FAILURE_STATUS', 401)
+            return HttpResponse(status=status)
+            
         # Extract remote IP address for validation purposes
         remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
         remote_addr = request.META.get(remote_addr_key)

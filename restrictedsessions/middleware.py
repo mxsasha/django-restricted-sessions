@@ -47,7 +47,7 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
             logger.warning("Destroyed session due to invalid change of remote host or user agent")
             redirect_view = getattr(settings, 'RESTRICTEDSESSIONS_REDIRECT_VIEW', None)
             # Unauthorize if the request contains neither a remote IP or User Agent
-            if not self.validate_ip(request, remote_addr) and not self.validate_ua(request):
+            if not remote_addr and not request.META.get('HTTP_USER_AGENT'):
                 status = getattr(settings, 'RESTRICTEDSESSIONS_FAILURE_STATUS', 401)
                 return HttpResponse(status=status)
             if redirect_view:

@@ -36,11 +36,6 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
         # Extract remote IP address for validation purposes
         remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
         remote_addr = request.META.get(remote_addr_key)
-
-        # Unauthorize if the request contains neither a remote IP or User Agent
-        if not remote_addr and not force_text(request.META.get('HTTP_USER_AGENT'), errors='replace'):
-            status = getattr(settings, 'RESTRICTEDSESSIONS_FAILURE_STATUS', 401)
-            return HttpResponse(status=status)
         
         # Clear the session and handle response when request doesn't validate
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):
@@ -51,6 +46,10 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
                 request.session.flush()
             logger.warning("Destroyed session due to invalid change of remote host or user agent")
             redirect_view = getattr(settings, 'RESTRICTEDSESSIONS_REDIRECT_VIEW', None)
+            # Unauthorize if the request contains neither a remote IP or User Agent
+            if not self.validate_ip(request, remote_addr) and not self.validate_ua(request):
+                status = getattr(settings, 'RESTRICTEDSESSIONS_FAILURE_STATUS', 401)
+                return HttpResponse(status=status)
             if redirect_view:
                 return redirect(reverse(redirect_view))
             else:

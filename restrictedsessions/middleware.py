@@ -3,7 +3,7 @@ from netaddr import IPNetwork, IPAddress, AddrConversionError, AddrFormatError
 import logging
 
 from django.http import HttpResponse
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils.encoding import force_text
 

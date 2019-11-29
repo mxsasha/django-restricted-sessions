@@ -25,7 +25,7 @@ class RestrictedSessionsMiddleware(object):
         user = getattr(request, 'user', None)
         if getattr(settings, 'RESTRICTEDSESSIONS_AUTHED_ONLY', False):
             # No logged in user -- ignore checks
-            if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated():
+            if not user or not hasattr(user, 'is_authenticated') or not user.is_authenticated:
                 return
 
         # Extract remote IP address for validation purposes

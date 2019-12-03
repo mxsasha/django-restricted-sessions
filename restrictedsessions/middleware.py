@@ -36,6 +36,8 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
         # Extract remote IP address for validation purposes
         remote_addr_key = getattr(settings, 'RESTRICTEDSESSIONS_REMOTE_ADDR_KEY', 'REMOTE_ADDR')
         remote_addr = request.META.get(remote_addr_key)
+        if remote_addr:
+            remote_addr = remote_addr.split(',')[0]
 
         # Clear the session and handle response when request doesn't validate
         if not self.validate_ip(request, remote_addr) or not self.validate_ua(request):

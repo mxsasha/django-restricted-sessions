@@ -164,6 +164,10 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
             invalid='::ffff:127.0.0.2'
         )
 
+    def test_validates_multiple_addresses(self):
+        self._remote_addr_test(session_ip='127.0.0.1', valid='127.0.0.1, 192.0.2.1',
+                               invalid='127.0.0.2, 127.0.0.1')
+
     def test_validates_ipv4_to_ipv6(self):
         self._remote_addr_test(session_ip='127.0.0.1', valid='127.0.0.1', invalid='2001:db8::1')
 

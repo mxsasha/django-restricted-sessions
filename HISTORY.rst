@@ -3,6 +3,12 @@
 History
 -------
 
+0.3.0 (2019-12-03)
+++++++++++++++++++
+
+* Updated Django support to 1.11, 2.2 and 3.0.
+* Fixed issues when ``X_FORWARDED_FOR`` contains multiple addresses.
+
 0.2.0 (2017-04-06)
 ++++++++++++++++++
 

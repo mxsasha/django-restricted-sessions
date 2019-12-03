@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Erik Romijn <eromijn@solidlinks.nl>
+* Sasha Romijn <github@mxsasha.eu>
 
 Contributors
 ------------

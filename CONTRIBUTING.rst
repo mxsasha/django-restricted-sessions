@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/erikr/django-restricted-sessions/issues.
+Report bugs at https://github.com/mxsasha/django-restricted-sessions/issues.
 
 If you are reporting a bug, please include:
 
@@ -43,7 +43,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/erikr/django-restricted-sessions/issues.
+The best way to send feedback is to file an issue at https://github.com/mxsasha/django-restricted-sessions/issues.
 
 If you are proposing a feature:
 
@@ -100,8 +100,8 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 2.6, 2.7, and 3.3, and for PyPy. Check 
-   https://travis-ci.org/erikr/django-restricted-sessions/pull_requests
+3. The pull request should work for Python 2.7 (Django 1.11 only), 3.5 (Django <3.0 only), 3.6 and 3.7. Check
+   https://travis-ci.org/mxsasha/django-restricted-sessions/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Tips

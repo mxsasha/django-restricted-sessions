@@ -5,11 +5,11 @@ django-restricted-sessions
 .. image:: https://badge.fury.io/py/django-restricted-sessions.png
     :target: http://badge.fury.io/py/django-restricted-sessions
 
-.. image:: https://travis-ci.org/erikr/django-restricted-sessions.png?branch=master
-    :target: https://travis-ci.org/erikr/django-restricted-sessions
+.. image:: https://travis-ci.org/mxsasha/django-restricted-sessions.png?branch=master
+    :target: https://travis-ci.org/mxsasha/django-restricted-sessions
 
-.. image:: https://coveralls.io/repos/erikr/django-restricted-sessions/badge.png?branch=master&
-    :target: https://coveralls.io/r/erikr/django-restricted-sessions?branch=master
+.. image:: https://coveralls.io/repos/mxsasha/django-restricted-sessions/badge.png?branch=master&
+    :target: https://coveralls.io/r/mxsasha/django-restricted-sessions?branch=master
 
 Restricts Django sessions to IP and/or user agent.
 

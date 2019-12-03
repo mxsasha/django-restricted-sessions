@@ -29,8 +29,8 @@ setup(
     description="""Restrict Django sessions to IP and/or user agent.""",
     long_description=readme + '\n\n' + history,
     author='django-restricted-sessions',
-    author_email='eromijn@solidlinks.nl',
-    url='https://github.com/erikr/django-restricted-sessions',
+    author_email='github@mxsasha.eu',
+    url='https://github.com/mxsasha/django-restricted-sessions',
     packages=[
         'restrictedsessions',
     ],

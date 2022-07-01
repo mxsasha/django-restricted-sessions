@@ -10,21 +10,23 @@ Tests for `django-restricted-sessions` models module.
 
 from __future__ import unicode_literals
 
-import unittest
+from unittest.mock import Mock
 
-from django.test.client import RequestFactory
-from django.test.utils import override_settings
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
+from django.test import TestCase
+from django.test.client import RequestFactory
+from django.test.utils import override_settings
 
 from restrictedsessions import middleware
 
 
-class TestRestrictedsessionsMiddleware(unittest.TestCase):
+class TestRestrictedsessionsMiddleware(TestCase):
 
     def setUp(self):
-        self.middleware = middleware.RestrictedSessionsMiddleware()
+        self.get_response = Mock()
+        self.middleware = middleware.RestrictedSessionsMiddleware(self.get_response)
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
 
@@ -233,7 +235,7 @@ class TestRestrictedsessionsMiddleware(unittest.TestCase):
         self.assertIsInstance(self.request.user, AnonymousUser)
 
     def add_session_to_request(self):
-        middleware = SessionMiddleware()
+        middleware = SessionMiddleware(self.get_response)
         middleware.process_request(self.request)
         self.request.session.save()
         # Trigger saving the session

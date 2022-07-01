@@ -6,7 +6,6 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.urls import reverse
 from django.shortcuts import redirect
-from django.utils.encoding import force_text
 
 try:
     from django.utils.deprecation import MiddlewareMixin
@@ -56,8 +55,11 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
 
         # Set the UA/IP Address on the session since they validated correctly
         request.session[SESSION_IP_KEY] = remote_addr
+        # Is this still possible on Django >= 3.2?
         if request.META.get('HTTP_USER_AGENT'):
-            request.session[SESSION_UA_KEY] = force_text(request.META['HTTP_USER_AGENT'], errors='replace')
+            if isinstance(request.META['HTTP_USER_AGENT'], bytes):
+                request.META['HTTP_USER_AGENT'] = str(request.META['HTTP_USER_AGENT'], errors='replace')
+            request.session[SESSION_UA_KEY] = request.META['HTTP_USER_AGENT']
 
     def validate_ip(self, request, remote_ip):
         # When we aren't configured to restrict on IP address
@@ -96,5 +98,8 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
         # When the user agent key hasn't been set yet in the request session
         if SESSION_UA_KEY not in request.session:
             return True
+        # Is this still possible on Django >= 3.2?
+        if isinstance(request.META['HTTP_USER_AGENT'], bytes):
+            request.META['HTTP_USER_AGENT'] = str(request.META['HTTP_USER_AGENT'], errors='replace')
         # Compare the new user agent value with what is known about the session
-        return request.session[SESSION_UA_KEY] == force_text(request.META['HTTP_USER_AGENT'], errors='replace')
+        return request.session[SESSION_UA_KEY] == request.META['HTTP_USER_AGENT']

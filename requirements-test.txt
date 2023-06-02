@@ -1,5 +1,4 @@
 coverage
 coveralls
 flake8>=2.1.0
-tox>=1.7.0
 netaddr>=0.7.10

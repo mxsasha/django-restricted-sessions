@@ -25,7 +25,7 @@ pip-log.txt
 # Unit test / coverage reports
 .coverage
 .tox
-nosetests.xml
+test.sqlite
 
 # Translations
 *.mo

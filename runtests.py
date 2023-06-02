@@ -1,13 +1,18 @@
 import sys
 
+import django
+from django.core.management import call_command
+
 try:
     from django.conf import settings
 
     settings.configure(
         DEBUG=True,
         USE_TZ=True,
+        SECRET_KEY='VERY_SECRET',
         DATABASES={
             "default": {
+                "NAME": "./test.sqlite",
                 "ENGINE": "django.db.backends.sqlite3",
             }
         },
@@ -19,7 +24,7 @@ try:
             "django.contrib.sessions",
             "restrictedsessions",
         ],
-        MIDDLEWARE_CLASSES = [
+        MIDDLEWARE=[
             'django.contrib.sessions.middleware.SessionMiddleware',
             'restrictedsessions.middleware.RestrictedSessionsMiddleware',
             'django.middleware.common.CommonMiddleware',
@@ -29,25 +34,16 @@ try:
             'django.middleware.clickjacking.XFrameOptionsMiddleware',
         ],
         SITE_ID=1,
-        NOSE_ARGS=['-s'],
     )
+    django.setup()
 
-    from django_nose import NoseTestSuiteRunner
 except ImportError:
     raise ImportError("To fix this error, run: pip install -r requirements-test.txt")
 
 
 def run_tests(*test_args):
-    if not test_args:
-        test_args = ['tests']
-
     # Run tests
-    test_runner = NoseTestSuiteRunner(verbosity=1)
-
-    failures = test_runner.run_tests(test_args)
-
-    if failures:
-        sys.exit(failures)
+    call_command('test', test_args)
 
 
 if __name__ == '__main__':

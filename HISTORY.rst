@@ -3,6 +3,12 @@
 History
 -------
 
+0.4.0 (2023-06-02)
+++++++++++++++++++
+
+* Updated Django support to only 3.2, 4.1 and 4.2 (thanks to @ronnievdc).
+* Various other cleanups and documentation format fixes.
+
 0.3.0 (2019-12-03)
 ++++++++++++++++++
 

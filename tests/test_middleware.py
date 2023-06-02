@@ -209,12 +209,12 @@ class TestRestrictedsessionsMiddleware(TestCase):
 
     def test_validates_ua(self):
         self.add_session_to_request()
-        # Non-UTF8 chars should be replaced with \ufffd (replacement character).
-        self.request.META["HTTP_USER_AGENT"] = b"test-ua1\xd9"
-        self.request.session[middleware.SESSION_UA_KEY] = "test-ua1\ufffd"
-        self.assertTrue(self.middleware.process_request(self.request) is None)
 
         self.request.META["HTTP_USER_AGENT"] = "test-ua1"
+        self.request.session[middleware.SESSION_UA_KEY] = "test-ua1"
+        self.assertTrue(self.middleware.process_request(self.request) is None)
+
+        self.request.META["HTTP_USER_AGENT"] = "test-ua2"
         self.assertEqual(self.middleware.process_request(self.request).status_code, 400)
 
     @override_settings(RESTRICTEDSESSIONS_RESTRICT_IP=False)

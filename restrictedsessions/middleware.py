@@ -56,12 +56,7 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
 
         # Set the UA/IP Address on the session since they validated correctly
         request.session[SESSION_IP_KEY] = remote_addr
-        # Is this still possible on Django >= 3.2?
         if request.META.get("HTTP_USER_AGENT"):
-            if isinstance(request.META["HTTP_USER_AGENT"], bytes):
-                request.META["HTTP_USER_AGENT"] = str(
-                    request.META["HTTP_USER_AGENT"], errors="replace"
-                )
             request.session[SESSION_UA_KEY] = request.META["HTTP_USER_AGENT"]
 
     def validate_ip(self, request, remote_ip):
@@ -101,8 +96,5 @@ class RestrictedSessionsMiddleware(MiddlewareMixin):
         # When the user agent key hasn't been set yet in the request session
         if SESSION_UA_KEY not in request.session:
             return True
-        # Is this still possible on Django >= 3.2?
-        if isinstance(request.META["HTTP_USER_AGENT"], bytes):
-            request.META["HTTP_USER_AGENT"] = str(request.META["HTTP_USER_AGENT"], errors="replace")
         # Compare the new user agent value with what is known about the session
         return request.session[SESSION_UA_KEY] == request.META["HTTP_USER_AGENT"]

@@ -5,16 +5,16 @@ Usage
 Setup
 -----
 
-Add the RestrictedSessionsMiddleware to your MIDDLEWARE_CLASSES settings, after SessionMiddleware::
+Add the ``RestrictedSessionsMiddleware`` to your ``MIDDLEWARE`` setting, after ``SessionMiddleware``::
 
-    MIDDLEWARE_CLASSES = [
-        ....
-        'django.contrib.sessions.middleware.SessionMiddleware',
+    MIDDLEWARE = [
+        "django.middleware.security.SecurityMiddleware",
+        "django.contrib.sessions.middleware.SessionMiddleware",
         'restrictedsessions.middleware.RestrictedSessionsMiddleware',
         ....
     ]
 
-When RestrictedSessionsMiddleware sees a request with a new session, it will store the client's current IP and
+When ``RestrictedSessionsMiddleware`` sees a request with a new session, it will store the client's current IP and
 user agent in the session. Upon further requests, it will validate the IP and user agent. If changes have occured,
 a 400 response is returned, the session is flushed and a warning is logged.
 
@@ -43,13 +43,13 @@ The following settings are available:
    to 2001:db9::1. Setting this to 128 is not recommended, as it will cause frequent session invalidation if clients
    use IPv6 privacy extensions.
  * ``RESTRICTEDSESSIONS_REDIRECT_VIEW`` (string, default: None): when this value is set to be a known view
- configured within the project's ROOT_URLCONF, then any failure of the session validation will redirect to this
- location after the session is cleared/flushed.
+   configured within the project's ROOT_URLCONF, then any failure of the session validation will redirect to this
+   location after the session is cleared/flushed.
  * ``RESTRICTEDSESSIONS_FAILURE_STATUS`` (int, default: 400) the HTTP status code to return when
-  not utilizing RESTRICTEDSESSIONS_REDIRECT_VIEW setting such that any failure of the session validation
+   not utilizing RESTRICTEDSESSIONS_REDIRECT_VIEW setting such that any failure of the session validation
    will return this status code.
  * ``RESTRICTEDSESSIONS_AUTHED_ONLY`` (bool, default: False) when set to true, only restricts the sessions
- for authenticated users.  Utilizes the `django.contrib.auth.logout` method to invalidate the session when enabled.
+   for authenticated users.  Utilizes the `django.contrib.auth.logout` method to invalidate the session when enabled.
 
 
 How much added security does this offer?
@@ -59,4 +59,4 @@ In a case where an attacker is able to obtain a session ID and tries to reuse it
 if the attacker is not careful. Once an attacker has the session ID, it is fairly likely that they also know
 the original user agent, which they could spoof. If they are in the same location as the victim, they may also be
 using the same IPv4 address or IPv6 block. Therefore, this middleware adds an extra hurdle for session ID abuse at
-very low cost, but may not help against careful attackers in the right situations.
+very low cost, but will not help against careful attackers in the right situations.

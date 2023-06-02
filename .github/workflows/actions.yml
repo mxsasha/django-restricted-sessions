@@ -59,9 +59,11 @@ jobs:
         run: |
           python -m pip install "Django~=${{ matrix.django-version }}"
 
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements-test.txt
+
       - name: Python and Django versions
         run: |
-          echo "Python ${{ matrix.python-version }} -> Django ${{ matrix.django-version }}"
-          python --version
-          echo "Django: `django-admin --version`"
+          coverage run --source restrictedsessions runtests.py
 

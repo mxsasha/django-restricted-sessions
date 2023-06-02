@@ -1,4 +1,3 @@
--r requirements.txt
 coverage
 coveralls
 flake8>=2.1.0
